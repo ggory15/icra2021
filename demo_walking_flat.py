@@ -127,19 +127,23 @@ while True:
 
             sampleCom = TSID.TrajectorySample(3)
             sampleCom.pos(CurveSet.com_traj[i-time_offset])  
+            sampleCom.vel(CurveSet.com_dot_traj[i-time_offset])  
             tsid.comTask.setReference(sampleCom)
 
             sampleAM = TSID.TrajectorySample(3)
             sampleAM.pos(CurveSet.L_traj[i-time_offset])
+            sampleAM.vel(CurveSet.L_dot_traj[i-time_offset])
             tsid.amTask.setReference(sampleAM)
 
         elif Walk_phases.getContactType(cs) == 'Rf':
             sampleCom = TSID.TrajectorySample(3)
             sampleCom.pos(CurveSet.com_traj[i-time_offset])  
+            sampleCom.vel(CurveSet.com_dot_traj[i-time_offset])  
             tsid.comTask.setReference(sampleCom)
 
             sampleAM = TSID.TrajectorySample(3)
             sampleAM.pos(CurveSet.L_traj[i-time_offset])
+            sampleAM.vel(CurveSet.L_dot_traj[i-time_offset])
             tsid.amTask.setReference(sampleAM)
             if sequence_change:
                 swing_traj = get_foot_traj(tsid.robot.framePosition(tsid.formulation.data(), tsid.LF), Walk_phases.getPhase(cs).oMf_Lf, t - time_offset * conf.dt, Walk_phases.getFinalTime(cs))
@@ -150,11 +154,13 @@ while True:
 
         elif Walk_phases.getContactType(cs) == 'Lf':
             sampleCom = TSID.TrajectorySample(3)
-            sampleCom.pos(CurveSet.com_traj[i-time_offset])  
+            sampleCom.pos(CurveSet.com_traj[i-time_offset]) 
+            sampleCom.vel(CurveSet.com_dot_traj[i-time_offset])   
             tsid.comTask.setReference(sampleCom)
 
             sampleAM = TSID.TrajectorySample(3)
             sampleAM.pos(CurveSet.L_traj[i-time_offset])
+            sampleAM.vel(CurveSet.L_dot_traj[i-time_offset])
             tsid.amTask.setReference(sampleAM)
             if sequence_change:
                 swing_traj = get_foot_traj(tsid.robot.framePosition(tsid.formulation.data(), tsid.RF), Walk_phases.getPhase(cs).oMf_Rf, t - time_offset * conf.dt, Walk_phases.getFinalTime(cs))

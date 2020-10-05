@@ -17,7 +17,7 @@ class TsidBiped:
 
     def __init__(self, conf, viewer=pin.visualize.MeshcatVisualizer):
         self.conf = conf
-        self.t_limit = True
+        self.t_limit = False
         self.j_limit = True
 
         self.robot = tsid.RobotWrapper(conf.urdf, [conf.path], pin.JointModelFreeFlyer(), False)

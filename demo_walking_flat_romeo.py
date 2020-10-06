@@ -4,7 +4,7 @@ from trajectory import phase as Phs
 from curves import piecewise, polynomial, SE3Curve
 
 ''' For reading the trajectory from Jiyai '''
-with open('walk_7.p', 'rb') as f:
+with open('walk_1.p', 'rb') as f:
     original_data =[]
     while True:
         try:
@@ -20,8 +20,8 @@ Walk_phases = Phs.Phases(data_dict)
 CurveSet = traj.Interpolation(Walk_phases, 0.0005)
 
 
-''' For Talos Controller '''
-import talos_conf as conf
+''' For Romeo Controller '''
+import romeo_conf as conf
 from tsid_biped import TsidBiped
 import vizutils
 import numpy as np 
@@ -31,7 +31,7 @@ import tsid as TSID
 
 np.set_printoptions(precision=4)
 
-def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.75])):
+def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.55])):
     c0 = com.copy()
     dc0 = np.zeros(3)
     ddc0 = np.zeros(3)
@@ -102,7 +102,7 @@ while True:
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset / 2.0 * conf.dt and t < time_offset * conf.dt:
         sampleCom = TSID.TrajectorySample(3)
-        sampleCom.pos(np.array([0.6, 0, 0.75]))
+        sampleCom.pos(np.array([0.6, 0, 0.55]))
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset * conf.dt:
 

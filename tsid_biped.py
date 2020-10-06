@@ -18,7 +18,7 @@ class TsidBiped:
     def __init__(self, conf, viewer=pin.visualize.MeshcatVisualizer):
         self.conf = conf
         self.t_limit = False
-        self.j_limit = True
+        self.j_limit = False
 
         self.robot = tsid.RobotWrapper(conf.urdf, [conf.path], pin.JointModelFreeFlyer(), False)
         robot = self.robot
@@ -28,6 +28,8 @@ class TsidBiped:
         
         self.q0[0] = q[0] + 0.003 + 0.6
         self.q0[1] = q[1] - 0.001
+        self.q0[2] += 0.84
+
         q = self.q0
         v = np.zeros(robot.nv)
 

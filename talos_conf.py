@@ -69,15 +69,15 @@ gain_vector = np.array(  # gain vector for postural task
     ]  #head
 )
 masks_posture = np.ones(32)
-# masks_posture[:12] = np.zeros(12) 
+gain_vector[:12] *= 0.1 # np.zeros(12) 
 tau_max_scaling = 1.45  # scaling factor of torque bounds
 v_max_scaling = 0.8
 
 kp_contact = 300.0       # proportional gain of contact constraint
 kp_foot = 500.0          # proportional gain of contact constraint
 kp_com = 50.0           # proportional gain of center of mass task
-kp_posture = 100.0        # proportional gain of joint posture task
-kp_rootOrientation = 1000.  # proportional gain of the root's orientation task
+kp_posture = 1000.0        # proportional gain of joint posture task
+kp_rootOrientation = 3000.  # proportional gain of the root's orientation task
 kp_am = 10. # gain used for the minimization of the Angular momentum
 kp_am_track = 10. # gain used for the tracking of the Angular momentum
 

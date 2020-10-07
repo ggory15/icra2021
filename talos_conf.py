@@ -22,13 +22,13 @@ lf_frame_name = "leg_left_sole_fix_joint"   # left foot frame name
 contactNormal = np.array([0., 0., 1.])      # direction of the normal to the contact surface
 
 w_com = 1.0             # weight of center of mass task
-w_foot = 5.0          # weight of the foot motion task
+w_foot = 10.0          # weight of the foot motion task
 w_contact = -1.0        # weight of foot in contact (negative means infinite weight)
 w_posture = 0.1        # weight of joint posture task
 w_forceRef = 1e-3       # weight of force regularization task
 w_torque_bounds = 0.0   # weight of the torque bounds
 w_joint_bounds = 0.0
-w_rootOrientation = 1.
+w_rootOrientation = 3.
 w_am = 1e-1 # weight used for the minimization of the Angular momentum
 w_am_track = 1e-1 # weight used for the tracking of the Angular momentum
 
@@ -69,14 +69,14 @@ gain_vector = np.array(  # gain vector for postural task
     ]  #head
 )
 masks_posture = np.ones(32)
-masks_posture[:12] = np.zeros(12) 
+# masks_posture[:12] = np.zeros(12) 
 tau_max_scaling = 1.45  # scaling factor of torque bounds
 v_max_scaling = 0.8
 
 kp_contact = 300.0       # proportional gain of contact constraint
-kp_foot = 50.0          # proportional gain of contact constraint
+kp_foot = 500.0          # proportional gain of contact constraint
 kp_com = 50.0           # proportional gain of center of mass task
-kp_posture = 1000.0        # proportional gain of joint posture task
+kp_posture = 100.0        # proportional gain of joint posture task
 kp_rootOrientation = 1000.  # proportional gain of the root's orientation task
 kp_am = 10. # gain used for the minimization of the Angular momentum
 kp_am_track = 10. # gain used for the tracking of the Angular momentum

@@ -4,7 +4,7 @@ from trajectory import phase as Phs
 from curves import piecewise, polynomial, SE3Curve
 
 ''' For reading the trajectory from Jiyai '''
-with open('walk_7.p', 'rb') as f:
+with open('walk_0_new.p', 'rb') as f:
     original_data =[]
     while True:
         try:
@@ -12,6 +12,7 @@ with open('walk_7.p', 'rb') as f:
         except EOFError:
             break
         original_data.append(data)
+
 
 data_dict = original_data[0]['TSID_Trajectories']
 data_size = len(data_dict)
@@ -31,7 +32,7 @@ import tsid as TSID
 
 np.set_printoptions(precision=4)
 
-def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.75])):
+def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.8])):
     c0 = com.copy()
     dc0 = np.zeros(3)
     ddc0 = np.zeros(3)
@@ -39,8 +40,18 @@ def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.75])):
     phase = polynomial(c0, dc0, ddc0, com_d, dc0, ddc0, t, t+2)
     return phase
 
-def get_foot_traj(oMi, oMf, stime, endtime):
-    phase = SE3Curve(oMi, oMf, stime, endtime)
+def get_foot_traj(oMi, oMf, stime, endtime, z_height =0.05):
+    phase = []
+
+    oMi_half= oMf.copy()
+    oMi_half.translation = (oMf.translation + oMi.translation)/2.0
+    oMi_half.translation[2] = z_height
+
+    phase1 = SE3Curve(oMi, oMi_half, stime, (endtime+stime)/2.0)
+    phase2 = SE3Curve(oMi_half, oMf, (endtime+stime)/2.0, endtime)
+
+    phase.append(phase1)
+    phase.append(phase2)
     return phase
 
 def curvesToTSID(curves,t):
@@ -54,7 +65,7 @@ def curvesToTSID(curves,t):
     sample.vel(np.zeros(3))
     return sample
 
-def curveSE3toTSID(curve,t, computeAcc = False):
+def curveSE3toTSID(curve,t, computeAcc = True):
     # adjust t to bounds, required due to precision issues:
     if curve.min() > t > curve.min() - 1e-3:
         t = curve.min()
@@ -62,6 +73,7 @@ def curveSE3toTSID(curve,t, computeAcc = False):
         t = curve.max()
     sample = TSID.TrajectorySample(12,6)
     placement = curve.evaluateAsSE3(t)
+    
     vel = curve.derivateAsMotion(t,1)
     sample.pos(SE3toVec(placement))
     sample.vel(MotiontoVec(vel))
@@ -69,6 +81,17 @@ def curveSE3toTSID(curve,t, computeAcc = False):
         acc = curve.derivateAsMotion(t, 2)
         sample.acc(MotiontoVec(acc))
     return sample
+
+def footTrajcurves(phase, t):
+    i = 0
+    if phase[0].min() > t > phase[0].min() - 1e-3:
+        t = phase[0].min()
+    if phase[1].max() > t > phase[1].max() - 1e-3:
+        t = phase[1].max()
+    if phase[1].min() <= t:
+        i = 1
+   
+    return curveSE3toTSID(phase[i], t)
 
 def SE3toVec(M):
     v = np.zeros(12)
@@ -102,7 +125,7 @@ while True:
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset / 2.0 * conf.dt and t < time_offset * conf.dt:
         sampleCom = TSID.TrajectorySample(3)
-        sampleCom.pos(np.array([0.6, 0, 0.75]))
+        sampleCom.pos(np.array([0.6, 0, 0.8]))
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset * conf.dt:
 
@@ -148,7 +171,7 @@ while True:
                 swing_traj = get_foot_traj(tsid.robot.framePosition(tsid.formulation.data(), tsid.LF), Walk_phases.getPhase(cs).oMf_Lf, t - time_offset * conf.dt, Walk_phases.getFinalTime(cs))
                 sequence_change = False
             
-            sampleFoot = curveSE3toTSID(swing_traj,t-time_offset * conf.dt)
+            sampleFoot = footTrajcurves(swing_traj,t-time_offset * conf.dt)
             tsid.leftFootTask.setReference(sampleFoot)
 
         elif Walk_phases.getContactType(cs) == 'Lf':
@@ -165,7 +188,7 @@ while True:
                 swing_traj = get_foot_traj(tsid.robot.framePosition(tsid.formulation.data(), tsid.RF), Walk_phases.getPhase(cs).oMf_Rf, t - time_offset * conf.dt, Walk_phases.getFinalTime(cs))
                 sequence_change = False
             
-            sampleFoot = curveSE3toTSID(swing_traj,t-time_offset * conf.dt)
+            sampleFoot = footTrajcurves(swing_traj,t-time_offset * conf.dt)
             tsid.rightFootTask.setReference(sampleFoot)
 
 

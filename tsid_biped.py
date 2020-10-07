@@ -28,7 +28,7 @@ class TsidBiped:
         
         self.q0[0] = q[0] + 0.003 + 0.6
         self.q0[1] = q[1] - 0.001
-        self.q0[2] += 0.84
+        # self.q0[2] += 0.84
 
         q = self.q0
         v = np.zeros(robot.nv)

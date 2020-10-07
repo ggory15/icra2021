@@ -40,7 +40,7 @@ def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.8])):
     phase = polynomial(c0, dc0, ddc0, com_d, dc0, ddc0, t, t+2)
     return phase
 
-def get_foot_traj(oMi, oMf, stime, endtime, z_height =0.05):
+def get_foot_traj(oMi, oMf, stime, endtime, z_height =0.1):
     phase = []
 
     oMi_half= oMf.copy()

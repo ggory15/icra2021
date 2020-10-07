@@ -135,6 +135,7 @@ class TsidBiped:
         self.sample_com = self.trajCom.computeNext()
 
         q_ref = q[7:]
+        q_ref[:12] = np.array([0. ,  0.   ,  -0.4114 , 0.8594 ,-0.448 , -0.0017 , 0.    ,  0.  ,   -0.4114,  0.8594 ,-0.448,  -0.0017])
         self.trajPosture = tsid.TrajectoryEuclidianConstant("traj_joint", q_ref)
         postureTask.setReference(self.trajPosture.computeNext())
 

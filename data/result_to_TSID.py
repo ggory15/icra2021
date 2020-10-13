@@ -1,9 +1,11 @@
 import pickle
 import numpy as np
+from Tools import *
 
-#filename = '/home/jiayu/Desktop/MultiContact_DiffLevelFidelity/TSID_Almost_Symmetric_TestMotions/flat_NLP_previous/5LookAhead_Trial0.p'
-#filename = '/home/jiayu/Desktop/MultiContact_DiffLevelFidelity/flat_CoM_previous/2LookAhead_Trial0.p'
-filename = '/home/ggory15/git/icra2021/data/Terrain/Up_and_Down_Quaternions.p'
+import matplotlib.pyplot as plt #Matplotlib
+from mpl_toolkits.mplot3d import Axes3D
+
+filename = '/home/ggory15/git/icra2021/data/Terrain/4LookAhead_Trial0.p'
 
 with open(filename, 'rb') as f:
     data = pickle.load(f)
@@ -12,9 +14,18 @@ with open(filename, 'rb') as f:
 TISD_Trajectories = []
 
 Level1_VarIndex = data["VarIdx_of_All_Levels"]["Level1_Var_Index"]
+Level2_VarIndex = data["VarIdx_of_All_Levels"]["Level2_Var_Index"]
 
 Trajectories = data["Trajectory_of_All_Rounds"]
 CasadiParameters = data["CasadiParameters"]
+
+all_res = []
+
+timeseries = []
+
+time_offset = 0
+
+Terrain_flag = False
 
 for roundIdx in range(len(Trajectories)):
 
@@ -22,7 +33,9 @@ for roundIdx in range(len(Trajectories)):
 
     traj = Trajectories[roundIdx]
     casadiParams = CasadiParameters[roundIdx]
-
+    casadiPrevParams = []
+    if roundIdx > 0:
+        casadiPrevParams = CasadiParameters[roundIdx - 1]
     #Get raw data
     x_traj = traj[Level1_VarIndex["x"][0]:Level1_VarIndex["x"][1]+1]
     y_traj = traj[Level1_VarIndex["y"][0]:Level1_VarIndex["y"][1]+1]
@@ -38,11 +51,23 @@ for roundIdx in range(len(Trajectories)):
     Ldoty_traj = traj[Level1_VarIndex["Ldoty"][0]:Level1_VarIndex["Ldoty"][1]+1]
     Ldotz_traj = traj[Level1_VarIndex["Ldotz"][0]:Level1_VarIndex["Ldotz"][1]+1]
 
+    #clearflat = False
+    #Clear L Ldot
+    #if clearflat == True:
+    #    Lx_traj = np.full((len(Lx_traj),),0)
+    #    Ly_traj = np.full((len(Ly_traj),),0)
+    #    Lz_traj = np.full((len(Lz_traj),),0)
+
+    #    Ldotx_traj = np.full((len(Ldotx_traj),),0)
+    #    Ldoty_traj = np.full((len(Ldoty_traj),),0)
+    #    Ldotz_traj = np.full((len(Ldotz_traj),),0)
+
     px_res = traj[Level1_VarIndex["px"][0]:Level1_VarIndex["px"][1]+1]
     py_res = traj[Level1_VarIndex["py"][0]:Level1_VarIndex["py"][1]+1]
     pz_res = traj[Level1_VarIndex["pz"][0]:Level1_VarIndex["pz"][1]+1]
 
     Ts_res = traj[Level1_VarIndex["Ts"][0]:Level1_VarIndex["Ts"][1]+1]
+    #Ts_level2_res = traj[Level2_VarIndex["Ts"][0]:Level2_VarIndex["Ts"][1]+1]
 
     PLx_init = casadiParams[14]
     PLy_init = casadiParams[15]
@@ -59,6 +84,8 @@ for roundIdx in range(len(Trajectories)):
     Phase1_TimeSeries = np.linspace(0,Ts_res[0],8)
     Phase2_TimeSeries = np.linspace(Ts_res[0],Ts_res[1],8)
     Phase3_TimeSeries = np.linspace(Ts_res[1],Ts_res[2],8)
+    timeline = np.concatenate((time_offset+Phase1_TimeSeries,time_offset+Phase2_TimeSeries[1:],time_offset+Phase3_TimeSeries[1:]),axis=None)
+    time_offset = time_offset+Phase3_TimeSeries[-1]
 
     Phase1_x = x_traj[0:8]
     Phase2_x = x_traj[7:15]
@@ -107,6 +134,16 @@ for roundIdx in range(len(Trajectories)):
     Phase1_Ldotz = Ldotz_traj[0:8]
     Phase2_Ldotz = Ldotz_traj[7:15]
     Phase3_Ldotz = Ldotz_traj[14:]
+
+    #Get FootStep/Terrain Quaternions
+    if "TerrainModel" in data:
+        Allpatches = data["TerrainModel"]
+        Allquat = []
+
+        for patch in Allpatches:
+            quat = getQuaternion(patch)
+            Allquat.append(quat)
+        Terrain_flag = True
 
     TSIDTrajectory = {}
     
@@ -157,19 +194,75 @@ for roundIdx in range(len(Trajectories)):
 
     #Contact config
     TSIDTrajectory["Init_PL"]=[PLx_init,PLy_init,PLz_init]
+    
     TSIDTrajectory["Init_PR"]=[PRx_init,PRy_init,PRz_init]
+    
     TSIDTrajectory["Landing_P"] = list(np.concatenate((px_res,py_res,pz_res),axis=None))
+    TSIDTrajectory["FootStep_Quaternions"] = Allquat
     TSIDTrajectory["LeftSwingFlag"]=LeftSwingFlag
     TSIDTrajectory["RightSwingFlag"]=RightSwingFlag
 
+    if Terrain_flag is False:
+        TSIDTrajectory["Init_L_quat"]=np.array([0,0,0,1])
+        TSIDTrajectory["Init_R_quat"]=np.array([0,0,0,1])
+        TSIDTrajectory["Landing_quat"]=np.array([0,0,0,1])
+    else:   
+        if (roundIdx == 0) or (roundIdx > len(Trajectories)-2):
+            TSIDTrajectory["Init_L_quat"]=np.array([0,0,0,1])
+            TSIDTrajectory["Init_R_quat"]=np.array([0,0,0,1])
+        elif (roundIdx == 1):
+            if casadiPrevParams[0] == 1.0:
+                TSIDTrajectory["Init_L_quat"]= Allquat[roundIdx-1]
+                TSIDTrajectory["Init_R_quat"]=np.array([0,0,0,1])   
+            else:
+                TSIDTrajectory["Init_R_quat"]= Allquat[roundIdx-1]
+                TSIDTrajectory["Init_L_quat"]= np.array([0,0,0,1])  
+        else:
+            if casadiPrevParams[0] == 1.0:
+                TSIDTrajectory["Init_L_quat"]= Allquat[roundIdx-1]
+                TSIDTrajectory["Init_R_quat"]= Allquat[roundIdx-2]
+            else:
+                TSIDTrajectory["Init_R_quat"]= Allquat[roundIdx-1]
+                TSIDTrajectory["Init_L_quat"]= Allquat[roundIdx-2]    
+
+        if (roundIdx < len(Trajectories) - 3):
+            TSIDTrajectory["Landing_quat"] = Allquat[roundIdx]
+        else:
+            TSIDTrajectory["Landing_quat"] = Allquat[len(Trajectories) -3]    
+
+    print ("Phase #", roundIdx)
+    print ("Init_R", TSIDTrajectory["Init_R_quat"])
+    print ("Init_L", TSIDTrajectory["Init_L_quat"])
+    print ("Landing_quat", TSIDTrajectory["Landing_quat"])
+    print ("")
     TISD_Trajectories.append(TSIDTrajectory)
 
-    print("z_traj",z_traj)
+    #print(Ts_level2_res)
+    #print("y motion:", np.max(y_traj) - np.min(y_traj))
+    collected_traj = x_traj
+
+    if roundIdx == 0:
+        all_res.append(collected_traj)
+        timeseries.append(timeline)
+    else:
+        all_res.append(collected_traj[1:])
+        timeseries.append(timeline[1:])
+
+    #print("z_traj",z_traj)
+
+all_res = np.concatenate(all_res)
+timeseries = np.concatenate(timeseries)
+
+#plt.plot(timeseries,all_res)
+
+#plt.show()
+
+
 
 #Dump data into pickled file
 DumpedResult = {"TSID_Trajectories": TISD_Trajectories,
 }
-pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/walk_terrain_0"'.p', "wb"))  # save it into a file named save.p
+pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/TSID_Trajectory"'.p', "wb"))  # save it into a file named save.p
 
 
 

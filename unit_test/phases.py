@@ -1,7 +1,7 @@
 import pickle
 from trajectory import phase as Phs
 
-with open('walk_terrain_0.p', 'rb') as f:
+with open('TSID_Trajectory.p', 'rb') as f:
     original_data =[]
     while True:
         try:

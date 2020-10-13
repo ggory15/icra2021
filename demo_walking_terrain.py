@@ -4,7 +4,7 @@ from trajectory import phase as Phs
 from curves import piecewise, polynomial, SE3Curve
 
 ''' For reading the trajectory from Jiyai '''
-with open('walk_terrain_0.p', 'rb') as f:
+with open('TSID_Trajectory.p', 'rb') as f:
     original_data =[]
     while True:
         try:
@@ -12,7 +12,6 @@ with open('walk_terrain_0.p', 'rb') as f:
         except EOFError:
             break
         original_data.append(data)
-
 
 data_dict = original_data[0]['TSID_Trajectories']
 data_size = len(data_dict)
@@ -128,11 +127,6 @@ while True:
         sampleCom.pos(np.array([0.6, 0, 0.7]))
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset * conf.dt:
-
-        if cs > 40:
-            print (tsid.robot.framePosition(tsid.formulation.data(), tsid.LF))
-            print (aa)
-
         if Walk_phases.getContactType(cs) == 0 or Walk_phases.getContactType(cs) == 2: # DSP
             if sequence_change and Walk_phases.getContactType(cs) == 0:
                 if Walk_phases.getContactType(cs+1) == 'Rf':

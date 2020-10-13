@@ -112,17 +112,21 @@ class Phase:
                 self.Ly_dot = dict[index]['DoubleSupport_Ldoty'][1:] 
                 self.Lz_dot = dict[index]['DoubleSupport_Ldotz'][1:]           
 
-
-        self.oMi_Lf = pin.SE3(np.identity(3) , np.array(dict[index]['Init_PL']))
-        self.oMi_Rf = pin.SE3(np.identity(3) , np.array(dict[index]['Init_PR']))
+        quat = np.array(dict[index]['Init_L_quat']).tolist()
+        self.oMi_Lf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose()) , np.array(dict[index]['Init_PL']))
+        quat = np.array(dict[index]['Init_R_quat']).tolist()
+        self.oMi_Rf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ) , np.array(dict[index]['Init_PR']))
+  
         self.oMf_Rf = []
         self.oMf_Lf = []
 
         if dict[index]['LeftSwingFlag'] == 0:
-            self.oMf_Rf = pin.SE3(np.identity(3) , np.array(dict[index]['Landing_P']))
+            quat = np.array(dict[index]['Landing_quat']).tolist()
+            self.oMf_Rf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_P']))
             self.ssp = 'Lf'
         else:
-            self.oMf_Lf = pin.SE3(np.identity(3) , np.array(dict[index]['Landing_P']))
+            quat = np.array(dict[index]['Landing_quat']).tolist()
+            self.oMf_Lf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_P']))
             self.ssp = 'Rf'
     
   

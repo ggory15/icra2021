@@ -1,7 +1,7 @@
 import pickle
 from trajectory import phase as Phs
 
-with open('walk_2.p', 'rb') as f:
+with open('walk_terrain_0.p', 'rb') as f:
     original_data =[]
     while True:
         try:
@@ -18,4 +18,4 @@ Walk_phases = Phs.Phases(data_dict)
 # for i in range(data_size * 3):
 #     Walk_phases.print_phase(i, True)
 
-print (Walk_phases.getTimeSeries())
+print (data_dict)

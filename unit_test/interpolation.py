@@ -3,7 +3,7 @@ from trajectory import interpolation as traj
 from trajectory import phase as Phs
 from curves import piecewise, polynomial
 
-with open('walk_2.p', 'rb') as f:
+with open('walk_0_new.p', 'rb') as f:
     original_data =[]
     while True:
         try:

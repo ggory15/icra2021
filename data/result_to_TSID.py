@@ -3,7 +3,7 @@ import numpy as np
 
 #filename = '/home/jiayu/Desktop/MultiContact_DiffLevelFidelity/TSID_Almost_Symmetric_TestMotions/flat_NLP_previous/5LookAhead_Trial0.p'
 #filename = '/home/jiayu/Desktop/MultiContact_DiffLevelFidelity/flat_CoM_previous/2LookAhead_Trial0.p'
-filename = '/home/ggory15/git/icra2021/data/8LookAhead_Trial0.p'
+filename = '/home/ggory15/git/icra2021/data/Terrain/Up_and_Down_Quaternions.p'
 
 with open(filename, 'rb') as f:
     data = pickle.load(f)
@@ -169,7 +169,7 @@ for roundIdx in range(len(Trajectories)):
 #Dump data into pickled file
 DumpedResult = {"TSID_Trajectories": TISD_Trajectories,
 }
-pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/data/walk_0_new"'.p', "wb"))  # save it into a file named save.p
+pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/walk_terrain_0"'.p', "wb"))  # save it into a file named save.p
 
 
 

@@ -4,7 +4,7 @@ from trajectory import phase as Phs
 from curves import piecewise, polynomial, SE3Curve
 
 ''' For reading the trajectory from Jiyai '''
-with open('walk_0_new.p', 'rb') as f:
+with open('walk_terrain_0.p', 'rb') as f:
     original_data =[]
     while True:
         try:
@@ -32,7 +32,7 @@ import tsid as TSID
 
 np.set_printoptions(precision=4)
 
-def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.8])):
+def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.7])):
     c0 = com.copy()
     dc0 = np.zeros(3)
     ddc0 = np.zeros(3)
@@ -40,7 +40,7 @@ def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.8])):
     phase = polynomial(c0, dc0, ddc0, com_d, dc0, ddc0, t, t+2)
     return phase
 
-def get_foot_traj(oMi, oMf, stime, endtime, z_height =0.05, ori_flag = False):
+def get_foot_traj(oMi, oMf, stime, endtime, z_height =0.05):
     phase = []
 
     oMi_half= oMf.copy()
@@ -125,7 +125,7 @@ while True:
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset / 2.0 * conf.dt and t < time_offset * conf.dt:
         sampleCom = TSID.TrajectorySample(3)
-        sampleCom.pos(np.array([0.6, 0, 0.8]))
+        sampleCom.pos(np.array([0.6, 0, 0.7]))
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset * conf.dt:
 

@@ -31,7 +31,7 @@ import tsid as TSID
 
 np.set_printoptions(precision=4)
 
-def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.7])):
+def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.75])):
     c0 = com.copy()
     dc0 = np.zeros(3)
     ddc0 = np.zeros(3)
@@ -124,7 +124,7 @@ while True:
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset / 2.0 * conf.dt and t < time_offset * conf.dt:
         sampleCom = TSID.TrajectorySample(3)
-        sampleCom.pos(np.array([0.6, 0, 0.7]))
+        sampleCom.pos(np.array([0.6, 0, 0.75]))
         tsid.comTask.setReference(sampleCom)
     elif t >= time_offset * conf.dt:
         if Walk_phases.getContactType(cs) == 0 or Walk_phases.getContactType(cs) == 2: # DSP

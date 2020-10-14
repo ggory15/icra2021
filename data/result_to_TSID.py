@@ -5,7 +5,7 @@ from Tools import *
 import matplotlib.pyplot as plt #Matplotlib
 from mpl_toolkits.mplot3d import Axes3D
 
-filename = '/home/ggory15/git/icra2021/data/Terrain/4LookAhead_Trial0.p'
+filename = '/home/ggory15/git/icra2021/data/Flat/5LookAhead_Trial0.p'
 
 with open(filename, 'rb') as f:
     data = pickle.load(f)
@@ -143,7 +143,10 @@ for roundIdx in range(len(Trajectories)):
         for patch in Allpatches:
             quat = getQuaternion(patch)
             Allquat.append(quat)
-        Terrain_flag = True
+        if len(Allquat) < 2:
+            Terrain_flag = False
+        else:
+            Terrain_flag = True
 
     TSIDTrajectory = {}
     
@@ -198,11 +201,10 @@ for roundIdx in range(len(Trajectories)):
     TSIDTrajectory["Init_PR"]=[PRx_init,PRy_init,PRz_init]
     
     TSIDTrajectory["Landing_P"] = list(np.concatenate((px_res,py_res,pz_res),axis=None))
-    TSIDTrajectory["FootStep_Quaternions"] = Allquat
     TSIDTrajectory["LeftSwingFlag"]=LeftSwingFlag
     TSIDTrajectory["RightSwingFlag"]=RightSwingFlag
 
-    if Terrain_flag is False:
+    if Terrain_flag == False:
         TSIDTrajectory["Init_L_quat"]=np.array([0,0,0,1])
         TSIDTrajectory["Init_R_quat"]=np.array([0,0,0,1])
         TSIDTrajectory["Landing_quat"]=np.array([0,0,0,1])

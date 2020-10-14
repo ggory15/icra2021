@@ -4,7 +4,7 @@ from trajectory import phase as Phs
 from curves import piecewise, polynomial, SE3Curve
 
 ''' For reading the trajectory from Jiyai '''
-with open('walk_0_new.p', 'rb') as f:
+with open('TSID_Trajectory.p', 'rb') as f:
     original_data =[]
     while True:
         try:

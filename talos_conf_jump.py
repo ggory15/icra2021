@@ -76,7 +76,7 @@ v_max_scaling = 0.8
 
 kp_contact = 100.0       # proportional gain of contact constraint
 kp_foot = 50.0          # proportional gain of contact constraint
-kp_com = 50.0           # proportional gain of center of mass task
+kp_com = 500.0           # proportional gain of center of mass task
 kp_posture = 100.0        # proportional gain of joint posture task
 kp_rootOrientation = 1000.  # proportional gain of the root's orientation task
 kp_am = 10. # gain used for the minimization of the Angular momentum

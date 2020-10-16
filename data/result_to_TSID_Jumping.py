@@ -5,7 +5,7 @@ from Tools import *
 import matplotlib.pyplot as plt #Matplotlib
 from mpl_toolkits.mplot3d import Axes3D
 
-filename = '/home/ggory15/git/icra2021/data/Flat/2LookAhead_Trial0.p'
+filename = '/home/ggory15/git/icra2021/data/jump/2LookAhead_Trial0.p'
 
 with open(filename, 'rb') as f:
     data = pickle.load(f)
@@ -200,7 +200,9 @@ for roundIdx in range(len(Trajectories)):
     
     TSIDTrajectory["Init_PR"]=[PRx_init,PRy_init,PRz_init]
     
-    TSIDTrajectory["Landing_P"] = list(np.concatenate((px_res,py_res,pz_res),axis=None))
+    TSIDTrajectory["Landing_PL"] = list(np.concatenate((px_res,py_res,pz_res),axis=None))
+    TSIDTrajectory["Landing_PR"] = list(np.concatenate((px_res,-py_res,pz_res),axis=None))
+
     TSIDTrajectory["LeftSwingFlag"]=LeftSwingFlag
     TSIDTrajectory["RightSwingFlag"]=RightSwingFlag
 
@@ -264,7 +266,7 @@ timeseries = np.concatenate(timeseries)
 #Dump data into pickled file
 DumpedResult = {"TSID_Trajectories": TISD_Trajectories,
 }
-pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/TSID_Trajectory"'.p', "wb"))  # save it into a file named save.p
+pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/TSID_jump_Trajectory"'.p', "wb"))  # save it into a file named save.p
 
 
 

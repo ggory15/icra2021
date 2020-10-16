@@ -2,8 +2,10 @@ import pinocchio as pin
 import numpy as np
 np.set_printoptions(precision=4)
 class Phase:
-    def __init__(self, dict, index, type):
+    def __init__(self, dict, index, type, scenario = 'walk'):
         self.type = type
+        self.scenario = scenario
+
         if type == 0: # init dsp
             if index == 0:
                 self.time = dict[index]['InitDouble_TimeSeries']
@@ -120,35 +122,44 @@ class Phase:
         self.oMf_Rf = []
         self.oMf_Lf = []
 
-        if dict[index]['LeftSwingFlag'] == 0:
+        if self.scenario == 'walk':
+            if dict[index]['LeftSwingFlag'] == 0:
+                quat = np.array(dict[index]['Landing_quat']).tolist()
+                self.oMf_Rf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_P']))
+                self.ssp = 'Lf'
+            elif dict[index]['RightSwingFlag'] == 0:
+                quat = np.array(dict[index]['Landing_quat']).tolist()
+                self.oMf_Lf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_P']))
+                self.ssp = 'Rf'
+            else:
+                self.ssp = []
+        elif self.scenario == 'jump':
             quat = np.array(dict[index]['Landing_quat']).tolist()
-            self.oMf_Rf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_P']))
-            self.ssp = 'Lf'
-        else:
-            quat = np.array(dict[index]['Landing_quat']).tolist()
-            self.oMf_Lf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_P']))
-            self.ssp = 'Rf'
-    
-  
+            self.oMf_Rf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_PR']))
+            self.oMf_Lf = pin.SE3( pin.Quaternion(np.matrix(quat).transpose() ), np.array(dict[index]['Landing_PL']))
 
 class Phases:
-    def __init__(self, dict):
+    def __init__(self, dict, scenario='walk'): # scenario = walk and jump
         self.dict = dict
         self.p = []
         
         self.size = len (self.dict)
-        
+        self.scenario = scenario
+
         for i in range(self.size):
-            self.p.append(Phase(dict, i, 0))
-            self.p.append(Phase(dict, i, 1))
-            self.p.append(Phase(dict, i, 2))
+            self.p.append(Phase(dict, i, 0, scenario))
+            self.p.append(Phase(dict, i, 1, scenario))
+            self.p.append(Phase(dict, i, 2, scenario))
 
     def print_phase(self, index, verbose = False):
         print ("Phase Index: ", index)
         if  self.p[index].type == 0:
             print ("Phase State: Initial DSP")
         elif self.p[index].type == 1:
-            print ("Phase State: SSP with ", self.p[index].ssp, "supporting")
+            if self.scenario == 'walk':
+                print ("Phase State: SSP with ", self.p[index].ssp, "supporting")
+            elif self.scenario == 'jump':
+                print ("Phase State: Jump")
         else:
             print ("Phase State: Final DSP")
 
@@ -159,21 +170,28 @@ class Phases:
             print ("COM sereis: ", self.setCOM(self.p[index].com_x, self.p[index].com_y, self.p[index].com_z))
             print ("Mom sereris: ", self.setMOM(self.p[index].Lx, self.p[index].Ly, self.p[index].Lz))
 
-        if self.p[index].type == 1:
-            if self.p[index].ssp == 'Lf':
-                print ("Final Landing Pos is ", self.p[index].oMf_Rf.translation)
-            else:
-                print ("Final Landing Pos is ", self.p[index].oMf_Lf.translation)
+        if self.scenario == 'walk':
+            if self.p[index].type == 1:
+                if self.p[index].ssp == 'Lf':
+                    print ("Final Landing Pos is ", self.p[index].oMf_Rf.translation)
+                else:
+                    print ("Final Landing Pos is ", self.p[index].oMf_Lf.translation)
+        elif self.scenario == 'jump':
+            print ("Final Landing rfoot Pos is ", self.p[index].oMf_Rf.translation)
+            print ("Final Landing lfoot Pos is ", self.p[index].oMf_Lf.translation)
         
         print ("")
     def getContactType(self, index):
-        if self.p[index].type is not 1:
+        if self.scenario == 'walk':
+            if self.p[index].type is not 1:
+                return self.p[index].type
+            else:
+                return self.p[index].ssp
+        elif self.scenario == 'jump':
             return self.p[index].type
-        else:
-            return self.p[index].ssp
 
     def getFinalTime(self, index):
-        if index < len(self.p):
+        if index < len(self.p)-1:
             return self.p[index+1].time[0]
         else:
             return self.p[index].time[-1]

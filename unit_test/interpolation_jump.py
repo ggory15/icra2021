@@ -5,7 +5,7 @@ from curves import piecewise, polynomial
 import numpy as np
 import pandas as pd
 
-with open('TSID_Trajectory.p', 'rb') as f:
+with open('TSID_jump_Trajectory.p', 'rb') as f:
     original_data =[]
     while True:
         try:
@@ -17,42 +17,9 @@ with open('TSID_Trajectory.p', 'rb') as f:
 data_dict = original_data[0]['TSID_Trajectories']
 data_size = len(data_dict)
 
-Walk_phases = Phs.Phases(data_dict)
+print (data_dict)
+Walk_phases = Phs.Phases(data_dict, 'jump')
 CurveSet = traj.Interpolation(Walk_phases, 0.002)
-
-cs = np.zeros((6, 11))
-for i in range(len(Walk_phases.p)):
-    cs[i, 0] = Walk_phases.getFinalTime(i)
-    cs[i, 1:4] = Walk_phases.p[i].oMi_Rf.translation
-    cs[i, 4:7] = Walk_phases.p[i].oMi_Lf.translation
-    if Walk_phases.p[i].type == 0:
-        cs[i, 7:10] = np.zeros((1, 3))
-        cs[i, 10] = 0
-    elif Walk_phases.p[i].type == 1:
-        if Walk_phases.p[i].ssp == 'Lf': 
-            cs[i, 7:10] = Walk_phases.p[i].oMf_Rf.translation
-            cs[i, 10] = 1
-        elif Walk_phases.p[i].ssp == 'Rf': 
-            cs[i, 7:10] = Walk_phases.p[i].oMf_Lf.translation
-            cs[i, 10] = -1
-    else:
-        cs[i, 7:10] = np.zeros((1, 3))
-        cs[i, 10] = 2
-
-import pandas as pd
-df = pd.DataFrame(cs)
-df.to_csv('cs.csv', index=False)
-
-data = np.hstack( (CurveSet.com_traj, CurveSet.com_dot_traj) )
-data_s = np.vstack(   (   np.array(CurveSet.time_traj), data.transpose()))
-
-df = pd.DataFrame(data_s.T)
-df.to_csv('com_traj.csv', index=False)
-
-# contact phase : end_time, rfoot_pos, rfoot_ori, lfoot_pos, lfoot_ori, goal_pos, goal_ori, contact_type (=0, 1, 2)
-
-
-
 
 # ''' for display '''
 

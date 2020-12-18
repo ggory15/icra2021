@@ -3,6 +3,15 @@ from trajectory import interpolation as traj
 from trajectory import phase as Phs
 from curves import piecewise, polynomial, SE3Curve
 
+import talos_conf as conf
+from tsid_biped import TsidBiped
+import vizutils
+import numpy as np 
+import pinocchio as pin
+import copy
+import tsid as TSID
+np.set_printoptions(precision=4)
+
 ''' For reading the trajectory from Jiyai '''
 with open('TSID_Trajectory.p', 'rb') as f:
     original_data =[]
@@ -20,17 +29,8 @@ Walk_phases = Phs.Phases(data_dict)
 CurveSet = traj.Interpolation(Walk_phases, 0.0005)
 
 
+
 ''' For Talos Controller '''
-import talos_conf as conf
-from tsid_biped import TsidBiped
-import vizutils
-import numpy as np 
-import pinocchio as pin
-import copy
-import tsid as TSID
-
-np.set_printoptions(precision=4)
-
 def get_COM_initial_traj(com, com_d=np.array([0.6, 0, 0.75])):
     c0 = com.copy()
     dc0 = np.zeros(3)
@@ -116,6 +116,23 @@ phase_0_c = []
 time_offset = 8000
 sequence_change = True
 swing_traj = []
+
+''' For Terrain visualization '''
+data_dict = original_data[0]['TerrainData']
+if data_dict is not None:
+    data_size = len(data_dict['width'])
+    depth = 0.05
+    for i in range(data_size):
+        width = data_dict['width'][i]
+        height = data_dict['height'][i]
+        center = data_dict['center'][i] -depth * data_dict['normal'][i].reshape(3)/2.0
+
+        quat = data_dict['quat'][i]
+
+        vizutils.addViewerBox(tsid.viz, 'world/box'+str(i), width, height, depth, [0.8, 0.8, 0.8, 1])
+        vizutils.applyViewerConfiguration(tsid.viz, 'world/box'+str(i), center.tolist() + quat.tolist())
+
+
 
 while True:
     if t < time_offset / 2.0 * conf.dt:

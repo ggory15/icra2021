@@ -5,7 +5,7 @@ from Tools import *
 import matplotlib.pyplot as plt #Matplotlib
 from mpl_toolkits.mplot3d import Axes3D
 
-filename = '/home/ggory15/git/icra2021/data/Flat/2LookAhead_Trial0.p'
+filename = '/home/ggory15/git/icra2021/data/Terrain/darpa_10LookAhead_Trial0.p'
 
 with open(filename, 'rb') as f:
     data = pickle.load(f)
@@ -255,14 +255,36 @@ for roundIdx in range(len(Trajectories)):
 all_res = np.concatenate(all_res)
 timeseries = np.concatenate(timeseries)
 
-#plt.plot(timeseries,all_res)
+TerrainData = {'width': [], 'height': [], 'quat': [], 'center': [], 'normal': []}
+if "TerrainModel" in data:
+        Allpatches = data["TerrainModel"]
+        no = len(Allpatches)
+        # print (Allpatches[3])
 
-#plt.show()
+        for i in range(no):
+            TerrainData['width'].append(np.linalg.norm(Allpatches[i][1] - Allpatches[i][0])) 
+            TerrainData['height'].append(np.linalg.norm(Allpatches[i][2] - Allpatches[i][1]))
+            
+            x = np.matrix(Allpatches[i][0] - Allpatches[i][1]).T
+            y = np.matrix(Allpatches[i][0] - Allpatches[i][3]).T
+            z = np.cross(x.T, y.T).T
+           
+            mat_tmp = np.matrix(np.zeros((3,3)))
+            mat_tmp[:, 0] = x / np.linalg.norm(x)
+            mat_tmp[:, 1] = y / np.linalg.norm(y)
+            mat_tmp[:, 2] = z / np.linalg.norm(z)
+            r = R.from_matrix(mat_tmp)
+            
+            TerrainData['quat'].append(r.as_quat())
+            TerrainData['normal'].append( z.T / np.linalg.norm(z.T))
+            center = Allpatches[i][0]  + Allpatches[i][1] + Allpatches[i][2] + Allpatches[i][3]
+            TerrainData['center'].append(center/ 4.0)    
 
-
+else:
+    TerrainData = None
 
 #Dump data into pickled file
-DumpedResult = {"TSID_Trajectories": TISD_Trajectories,
+DumpedResult = {"TSID_Trajectories": TISD_Trajectories, "TerrainData": TerrainData
 }
 pickle.dump(DumpedResult, open("/home/ggory15/git/icra2021/TSID_Trajectory"'.p', "wb"))  # save it into a file named save.p
 
